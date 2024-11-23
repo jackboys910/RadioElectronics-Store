@@ -1,13 +1,16 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Container, Row, Col, Image, Button } from 'react-bootstrap'
 import { observer } from 'mobx-react-lite'
 import { Context } from '../index'
+import { fetchExchangeRate } from '../http/currencyAPI'
 
 const Basket = observer(() => {
   const { basket } = useContext(Context)
+  const [usdRate, setUsdRate] = useState(0)
 
   useEffect(() => {
     basket.fetchBasketDevices()
+    fetchExchangeRate().then((rate) => setUsdRate(rate))
   }, [])
 
   const handleRemove = async (id) => {
@@ -35,7 +38,10 @@ const Basket = observer(() => {
                 />
               </Col>
               <Col md={4}>{device.name}</Col>
-              <Col md={2}>{device.price} руб.</Col>
+              <Col md={2}>
+                {device.price} руб. (
+                {usdRate ? (device.price * usdRate).toFixed(2) : '...'}$)
+              </Col>
               <Col md={2}>
                 <Button variant="danger" onClick={() => handleRemove(id)}>
                   Удалить
@@ -45,7 +51,10 @@ const Basket = observer(() => {
           ))}
           <Row className="mt-4">
             <Col md={6}>
-              <h4>Итоговая сумма: {basket.totalPrice} руб.</h4>
+              <h4>
+                Итоговая сумма: {basket.totalPrice} руб. (
+                {usdRate ? (basket.totalPrice * usdRate).toFixed(2) : '...'}$)
+              </h4>
             </Col>
             <Col md={{ span: 3, offset: 9 }}>
               <Button variant="success" className="w-100">

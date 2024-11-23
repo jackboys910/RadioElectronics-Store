@@ -10,9 +10,11 @@ import {
   fetchDeviceRating,
   fetchAverageRating,
 } from '../http/ratingAPI'
+import { fetchExchangeRate } from '../http/currencyAPI'
 
 const DevicePage = () => {
   const [device, setDevice] = useState({ info: [] })
+  const [usdRate, setUsdRate] = useState(0)
   const [averageRating, setAverageRating] = useState(0)
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
@@ -32,6 +34,10 @@ const DevicePage = () => {
       })
     }
   }, [id, user.isAuth, user.user.id])
+
+  useEffect(() => {
+    fetchExchangeRate().then((rate) => setUsdRate(rate))
+  }, [id])
 
   const handleAddToBasket = async () => {
     basket.addDevice(device.id)
@@ -89,7 +95,10 @@ const DevicePage = () => {
               border: '5px solid lightgray',
             }}
           >
-            <h3>От: {device.price} руб.</h3>
+            <h3>
+              От: {device.price} руб. (
+              {usdRate ? (device.price * usdRate).toFixed(2) : '...'}$)
+            </h3>
             {user.isAuth && (
               <>
                 <div className="d-flex mt-3">

@@ -10,13 +10,38 @@ const DeviceItem = ({ device }) => {
   const history = useHistory()
   const [averageRating, setAverageRating] = useState(0)
 
+  // useEffect(() => {
+  //   let isMouted = true
+  //   fetchAverageRating(device.id).then((rating) => {
+  //     if (isMouted) {
+  //       setAverageRating(rating)
+  //     }
+  //   })
+  // }, [device.id])
+
   useEffect(() => {
-    let isMouted = true
-    fetchAverageRating(device.id).then((rating) => {
-      if (isMouted) {
-        setAverageRating(rating)
-      }
-    })
+    let isMounted = true
+    const controller = new AbortController()
+    const signal = controller.signal
+
+    fetchAverageRating(device.id, { signal })
+      .then((rating) => {
+        if (isMounted) {
+          setAverageRating(rating)
+        }
+      })
+      .catch((error) => {
+        if (error.name === 'AbortError') {
+          console.log('Запрос был отменен')
+        } else {
+          console.error('Ошибка при загрузке рейтинга:', error)
+        }
+      })
+
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
   }, [device.id])
 
   return (

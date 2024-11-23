@@ -16,7 +16,10 @@ export const fetchDeviceRating = async (deviceId, userId) => {
   return data
 }
 
-export const fetchAverageRating = async (deviceId) => {
-  const { data } = await $host.get(`api/rating/average/${deviceId}`)
-  return data.average
+export const fetchAverageRating = async (deviceId, options = {}) => {
+  const { signal } = options
+  const response = await $host.get(`api/rating/average/${deviceId}`, {
+    signal,
+  })
+  return response.data.average
 }
