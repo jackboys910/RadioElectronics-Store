@@ -4,18 +4,52 @@ import bigStar from '../assets/bigStar.png'
 import { useParams } from 'react-router-dom'
 import { fetchOneDevice } from '../http/deviceAPI'
 import { Context } from '../index'
+import { MdStar } from 'react-icons/md'
+import {
+  rateDevice,
+  fetchDeviceRating,
+  fetchAverageRating,
+} from '../http/ratingAPI'
 
 const DevicePage = () => {
   const [device, setDevice] = useState({ info: [] })
+  const [averageRating, setAverageRating] = useState(0)
+  const [rating, setRating] = useState(0)
+  const [hoverRating, setHoverRating] = useState(0)
   const { id } = useParams()
-  const { basket } = useContext(Context)
+  const { basket, user } = useContext(Context)
 
   useEffect(() => {
     fetchOneDevice(id).then((data) => setDevice(data))
-  }, [])
+
+    fetchAverageRating(id).then((rating) => setAverageRating(rating))
+
+    if (user.isAuth) {
+      fetchDeviceRating(id, user.user.id).then((data) => {
+        if (data) {
+          setRating(data.rate)
+        }
+      })
+    }
+  }, [id, user.isAuth, user.user.id])
 
   const handleAddToBasket = async () => {
     basket.addDevice(device.id)
+  }
+
+  const handleRate = async (rate) => {
+    if (!user.isAuth) {
+      alert('Вы должны войти в систему, чтобы оставить оценку.')
+      return
+    }
+
+    try {
+      await rateDevice(id, user.user.id, rate)
+      setRating(rate)
+      fetchAverageRating(id).then((rating) => setAverageRating(rating))
+    } catch (error) {
+      console.error('Ошибка при отправке рейтинга:', error)
+    }
   }
 
   return (
@@ -38,10 +72,10 @@ const DevicePage = () => {
                 width: 240,
                 height: 240,
                 backgroundSize: 'cover',
-                fontSize: 64,
+                fontSize: 50,
               }}
             >
-              {device.rating}
+              {averageRating.toFixed(2)}
             </div>
           </Row>
         </Col>
@@ -56,9 +90,26 @@ const DevicePage = () => {
             }}
           >
             <h3>От: {device.price} руб.</h3>
-            <Button variant={'outline-dark'} onClick={handleAddToBasket}>
-              Добавить в корзину
-            </Button>
+            {user.isAuth && (
+              <>
+                <div className="d-flex mt-3">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <MdStar
+                      key={star}
+                      size={32}
+                      color={star <= (hoverRating || rating) ? 'gold' : 'gray'}
+                      style={{ cursor: 'pointer' }}
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      onClick={() => handleRate(star)}
+                    />
+                  ))}
+                </div>
+                <Button variant={'outline-dark'} onClick={handleAddToBasket}>
+                  Добавить в корзину
+                </Button>
+              </>
+            )}
           </Card>
         </Col>
       </Row>
