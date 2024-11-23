@@ -11,7 +11,7 @@ import { Context } from '../index'
 import { handleLogin } from '../utils/handleLogin'
 
 const Auth = observer(() => {
-  const { user } = useContext(Context)
+  const { user, basket } = useContext(Context)
   const location = useLocation()
   const history = useHistory()
   const isLogin = location.pathname === LOGIN_ROUTE
@@ -21,9 +21,9 @@ const Auth = observer(() => {
   const click = async () => {
     try {
       if (isLogin) {
-        await handleLogin(email, password, user)
+        await handleLogin(email, password, user, basket)
       } else {
-        const decodedToken = await registration(email, password)
+        const decodedToken = await registration(email, password, basket)
         user.setUser(decodedToken)
         user.setIsAuth(true)
       }
