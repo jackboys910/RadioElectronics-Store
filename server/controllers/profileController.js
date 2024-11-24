@@ -55,6 +55,16 @@ class ProfileController {
       }
     }
 
+    if (req.body.photo === '') {
+      if (profile.photo !== 'user.png') {
+        const oldPath = path.resolve(imagesDir, profile.photo)
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath)
+        }
+      }
+      fileName = 'user.png'
+    }
+
     await profile.update({
       firstName,
       lastName,

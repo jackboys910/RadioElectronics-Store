@@ -5,7 +5,7 @@ import { observer } from 'mobx-react-lite'
 import { fetchProfile, updateProfile } from '../http/profileAPI'
 
 const Profile = observer(() => {
-  const { profile } = useContext(Context)
+  const { profile, user } = useContext(Context)
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -16,27 +16,39 @@ const Profile = observer(() => {
   const [successMessageVisible, setSuccessMessageVisible] = useState(false)
 
   useEffect(() => {
+    let isMounted = true
+
     const loadProfile = async () => {
       profile.setLoading(true)
       try {
         const data = await fetchProfile()
-        profile.setProfile(data)
-        setForm({
-          firstName: data.firstName || '',
-          lastName: data.lastName || '',
-          phone: data.phone || '',
-          address: data.address || '',
-          photo: null,
-        })
-        profile.setError(null)
+        if (isMounted) {
+          profile.setProfile(data)
+          setForm({
+            firstName: data.firstName || '',
+            lastName: data.lastName || '',
+            phone: data.phone || '',
+            address: data.address || '',
+            photo: null,
+          })
+          profile.setError(null)
+        }
       } catch (error) {
-        profile.setError('Ошибка загрузки профиля. Попробуйте позже.')
+        if (isMounted) {
+          profile.setError('Ошибка загрузки профиля. Попробуйте позже.')
+        }
       } finally {
-        profile.setLoading(false)
+        if (isMounted) {
+          profile.setLoading(false)
+        }
       }
     }
 
     loadProfile()
+
+    return () => {
+      isMounted = false
+    }
   }, [profile])
 
   const handleInputChange = (e) => {
@@ -67,6 +79,44 @@ const Profile = observer(() => {
       }, 2000)
     } catch (error) {
       alert('Ошибка при обновлении профиля!')
+    }
+  }
+
+  const handleReset = async () => {
+    const defaultForm =
+      user.user.role === 'ADMIN'
+        ? {
+            firstName: 'Admin',
+            lastName: 'Admin',
+            phone: '',
+            address: '',
+          }
+        : {
+            firstName: '',
+            lastName: '',
+            phone: '',
+            address: '',
+          }
+
+    setForm({ ...defaultForm, photo: null })
+
+    const formData = new FormData()
+    for (const key in defaultForm) {
+      formData.append(key, defaultForm[key])
+    }
+    formData.append('photo', '')
+
+    try {
+      const updatedProfile = await updateProfile(formData)
+      profile.setProfile(updatedProfile)
+
+      setSuccessMessageVisible(true)
+
+      setTimeout(() => {
+        setSuccessMessageVisible(false)
+      }, 2000)
+    } catch (error) {
+      alert('Ошибка при сбросе данных профиля!')
     }
   }
 
@@ -144,6 +194,14 @@ const Profile = observer(() => {
         </Form.Group>
         <Button variant="primary" type="submit">
           Сохранить изменения
+        </Button>
+        <Button
+          style={{ marginLeft: 20 }}
+          variant="secondary"
+          type="button"
+          onClick={handleReset}
+        >
+          Сбросить данные
         </Button>
         <div
           style={{
