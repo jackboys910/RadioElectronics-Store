@@ -4,6 +4,7 @@ import App from './App'
 import UserStore from './store/UserStore'
 import DeviceStore from './store/DeviceStore'
 import BasketStore from './store/BasketStore'
+import ProfileStore from './store/ProfileStore'
 
 export const Context = createContext(null)
 
@@ -13,6 +14,7 @@ ReactDOM.render(
       user: new UserStore(),
       device: new DeviceStore(),
       basket: new BasketStore(),
+      profile: new ProfileStore(),
     }}
   >
     <App />

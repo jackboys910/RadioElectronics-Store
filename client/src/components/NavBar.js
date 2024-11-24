@@ -13,6 +13,7 @@ import { Button, Badge } from 'react-bootstrap'
 import { observer } from 'mobx-react-lite'
 import Container from 'react-bootstrap/Container'
 import { FaBasketShopping } from 'react-icons/fa6'
+import { FaUser } from 'react-icons/fa6'
 import { useHistory } from 'react-router-dom'
 
 const NavBar = observer(() => {
@@ -56,6 +57,16 @@ const NavBar = observer(() => {
                 {basket.basketDevices.length}
               </Badge>
             </div>
+            <FaUser
+              style={{
+                marginRight: 10,
+                marginLeft: 10,
+                marginTop: 6,
+                cursor: 'pointer',
+              }}
+              size={28}
+              onClick={() => history.push('/profile')}
+            />
             {user.user?.role === 'ADMIN' && (
               <Button
                 variant={'outline-light'}

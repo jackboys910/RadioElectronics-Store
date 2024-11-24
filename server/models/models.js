@@ -49,6 +49,16 @@ const TypeBrand = sequelize.define('type_brand', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 })
 
+const Profile = sequelize.define('profile', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  userId: { type: DataTypes.INTEGER, allowNull: false, unique: true },
+  firstName: { type: DataTypes.STRING },
+  lastName: { type: DataTypes.STRING },
+  phone: { type: DataTypes.STRING },
+  address: { type: DataTypes.STRING },
+  photo: { type: DataTypes.STRING, defaultValue: 'user.png' },
+})
+
 User.hasOne(Basket)
 Basket.belongsTo(User)
 
@@ -76,6 +86,9 @@ DeviceInfo.belongsTo(Device)
 Type.belongsToMany(Brand, { through: TypeBrand })
 Brand.belongsToMany(Type, { through: TypeBrand })
 
+User.hasOne(Profile)
+Profile.belongsTo(User)
+
 module.exports = {
   User,
   Basket,
@@ -86,4 +99,5 @@ module.exports = {
   Rating,
   TypeBrand,
   DeviceInfo,
+  Profile,
 }
