@@ -5,10 +5,12 @@ import star from '../assets/star.png'
 import { useHistory } from 'react-router-dom'
 import { DEVICE_ROUTE } from '../utils/consts'
 import { fetchAverageRating } from '../http/ratingAPI'
+import { truncate } from '../utils/truncate'
 
 const DeviceItem = ({ device }) => {
   const history = useHistory()
   const [averageRating, setAverageRating] = useState(0)
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth)
 
   // useEffect(() => {
   //   let isMouted = true
@@ -18,6 +20,18 @@ const DeviceItem = ({ device }) => {
   //     }
   //   })
   // }, [device.id])
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth)
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -44,11 +58,16 @@ const DeviceItem = ({ device }) => {
     }
   }, [device.id])
 
+  const colStyle = {
+    marginRight: windowWidth >= 390 && windowWidth <= 992 ? 30 : 0,
+  }
+
   return (
     <Col
       md={3}
       className={'mt-3'}
       onClick={() => history.push(DEVICE_ROUTE + '/' + device.id)}
+      style={colStyle}
     >
       <Card style={{ width: 150, cursor: 'pointer' }} border={'light'}>
         <Image
@@ -56,14 +75,14 @@ const DeviceItem = ({ device }) => {
           height={150}
           src={process.env.REACT_APP_API_URL + device.img}
         />
-        <div className="text-black-50 mt-1 d-flex justify-content-between align-items-center">
-          <div>Samsung...</div>
+        <div className="text-black-50 mt-1 d-flex justify-content-end align-items-center">
+          {/* <div>Samsung...</div> */}
           <div className="d-flex align-items-center">
             <div>{averageRating.toFixed(1)}</div>
             <Image width={18} height={18} src={star} />
           </div>
         </div>
-        <div>{device.name}</div>
+        <div>{truncate(device.name, 18)}</div>
       </Card>
     </Col>
   )

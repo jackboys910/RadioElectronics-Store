@@ -11,6 +11,7 @@ import {
   fetchAverageRating,
 } from '../http/ratingAPI'
 import { fetchExchangeRate } from '../http/currencyAPI'
+import { truncate } from '../utils/truncate'
 
 const DevicePage = () => {
   const [device, setDevice] = useState({ info: [] })
@@ -70,7 +71,7 @@ const DevicePage = () => {
         </Col>
         <Col md={4}>
           <Row className="d-flex flex-column align-items-center">
-            <h2>{device.name}</h2>
+            <h2 title={device.name}>{truncate(device.name, 20)}</h2>
             <div
               className="d-flex align-items-center justify-content-center"
               style={{

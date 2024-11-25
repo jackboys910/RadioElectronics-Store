@@ -14,6 +14,7 @@ const Profile = observer(() => {
     photo: null,
   })
   const [successMessageVisible, setSuccessMessageVisible] = useState(false)
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     let isMounted = true
@@ -53,6 +54,17 @@ const Profile = observer(() => {
 
   const handleInputChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
+    setErrors({ ...errors, [e.target.name]: false })
+  }
+
+  const validateForm = () => {
+    const newErrors = {}
+    if (!form.firstName) newErrors.firstName = true
+    if (!form.lastName) newErrors.lastName = true
+    if (!form.phone) newErrors.phone = true
+    if (!form.address) newErrors.address = true
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleFileChange = (e) => {
@@ -61,6 +73,10 @@ const Profile = observer(() => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!validateForm()) {
+      return
+    }
+
     const formData = new FormData()
     for (const key in form) {
       if (form[key] !== null) {
@@ -157,39 +173,51 @@ const Profile = observer(() => {
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Имя</Form.Label>
+          <Form.Label>
+            Имя <span style={{ color: 'red' }}>*</span>
+          </Form.Label>
           <Form.Control
             type="text"
             name="firstName"
             value={form.firstName || ''}
             onChange={handleInputChange}
+            isInvalid={errors.firstName}
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Фамилия</Form.Label>
+          <Form.Label>
+            Фамилия <span style={{ color: 'red' }}>*</span>
+          </Form.Label>
           <Form.Control
             type="text"
             name="lastName"
             value={form.lastName || ''}
             onChange={handleInputChange}
+            isInvalid={errors.lastName}
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Телефон</Form.Label>
+          <Form.Label>
+            Телефон <span style={{ color: 'red' }}>*</span>
+          </Form.Label>
           <Form.Control
             type="text"
             name="phone"
             value={form.phone || ''}
             onChange={handleInputChange}
+            isInvalid={errors.phone}
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Адрес</Form.Label>
+          <Form.Label>
+            Адрес <span style={{ color: 'red' }}>*</span>
+          </Form.Label>
           <Form.Control
             type="text"
             name="address"
             value={form.address || ''}
             onChange={handleInputChange}
+            isInvalid={errors.address}
           />
         </Form.Group>
         <Button variant="primary" type="submit">

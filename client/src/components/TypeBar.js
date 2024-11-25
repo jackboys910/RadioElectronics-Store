@@ -1,11 +1,12 @@
 import React, { useContext } from 'react'
 import { observer } from 'mobx-react-lite'
 import { Context } from '../index'
-import Col from 'react-bootstrap/Col'
 import ListGroup from 'react-bootstrap/ListGroup'
+import { truncate } from '../utils/truncate'
 
 const TypeBar = observer(() => {
   const { device } = useContext(Context)
+
   return (
     <ListGroup>
       {device.types.map((type) => (
@@ -14,8 +15,9 @@ const TypeBar = observer(() => {
           active={type.id === device.selectedType.id}
           onClick={() => device.setSelectedType(type)}
           key={type.id}
+          title={type.name}
         >
-          {type.name}
+          {truncate(type.name, 12)}
         </ListGroup.Item>
       ))}
     </ListGroup>
