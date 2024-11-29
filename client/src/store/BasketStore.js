@@ -1,5 +1,10 @@
 import { makeAutoObservable } from 'mobx'
-import { fetchBasket, addToBasket, removeFromBasket } from '../http/basketAPI'
+import {
+  fetchBasket,
+  addToBasket,
+  removeFromBasket,
+  clearBasket,
+} from '../http/basketAPI'
 
 export default class BasketStore {
   constructor() {
@@ -66,6 +71,16 @@ export default class BasketStore {
       this.removeDeviceFromBasket(id)
     } catch (error) {
       console.error('Ошибка при удалении устройства из корзины:', error)
+    }
+  }
+
+  async clearBasket() {
+    try {
+      await clearBasket()
+      this._basketDevices = []
+      this._totalPrice = 0
+    } catch (error) {
+      console.error('Ошибка при очистке корзины:', error)
     }
   }
 

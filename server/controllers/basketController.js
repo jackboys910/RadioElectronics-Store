@@ -71,6 +71,23 @@ class BasketController {
       next(ApiError.internal(error.message))
     }
   }
+
+  async clearBasket(req, res, next) {
+    try {
+      const userId = req.user.id
+
+      const basket = await Basket.findOne({ where: { userId } })
+      if (!basket) {
+        return next(ApiError.internal('Корзина пользователя не найдена'))
+      }
+
+      await BasketDevice.destroy({ where: { basketId: basket.id } })
+
+      return res.json({ message: 'Корзина успешно очищена' })
+    } catch (error) {
+      next(ApiError.internal(error.message))
+    }
+  }
 }
 
 module.exports = new BasketController()

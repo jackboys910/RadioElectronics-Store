@@ -14,6 +14,7 @@ import { useHistory } from 'react-router-dom'
 import { PROFILE_ROUTE } from '../utils/consts'
 import { Context } from '../index'
 import { fetchExchangeRate } from '../http/currencyAPI'
+import { fetchProfile } from '../http/profileAPI'
 import { truncate } from '../utils/truncate'
 
 const Basket = observer(() => {
@@ -28,6 +29,19 @@ const Basket = observer(() => {
   useEffect(() => {
     basket.fetchBasketDevices()
     fetchExchangeRate().then((rate) => setUsdRate(rate))
+
+    profile.setLoading(true)
+    fetchProfile()
+      .then((data) => {
+        profile.setProfile(data)
+        profile.setError(null)
+      })
+      .catch(() => {
+        profile.setError('Ошибка загрузки профиля. Попробуйте позже.')
+      })
+      .finally(() => {
+        profile.setLoading(false)
+      })
   }, [])
 
   const checkProfileFields = () => {
@@ -51,11 +65,13 @@ const Basket = observer(() => {
 
   const handlePayment = () => {
     setIsLoading(true)
+
     setTimeout(() => {
       setIsLoading(false)
       setPaymentSuccess(true)
 
       setTimeout(() => {
+        basket.clearBasket()
         setShowModal(false)
       }, 5000)
     }, 2000)
@@ -102,8 +118,20 @@ const Basket = observer(() => {
                 {usdRate ? (basket.totalPrice * usdRate).toFixed(2) : '...'}$)
               </h4>
             </Col>
-            <Col md={{ span: 3, offset: 9 }}>
-              <Button variant="success" className="w-100" onClick={handleOrder}>
+            <Col
+              style={{ marginTop: 70 }}
+              md={{ span: 6 }}
+              className="d-flex justify-content-end"
+            >
+              <Button
+                variant="danger"
+                className="me-3"
+                onClick={() => basket.clearBasket()}
+                style={{ marginRight: 10 }}
+              >
+                Очистить корзину
+              </Button>
+              <Button variant="success" onClick={handleOrder}>
                 Оформить заказ
               </Button>
             </Col>
