@@ -34,24 +34,46 @@ class ProfileController {
     let fileName = profile.photo
     if (req.files && req.files.photo) {
       const { photo } = req.files
+
+      const allowedFormats = [
+        'image/png',
+        'image/jpg',
+        'image/jpeg',
+        'image/gif',
+      ]
+      if (!allowedFormats.includes(photo.mimetype)) {
+        return next(
+          ApiError.badRequest(
+            'Можно загружать только изображения форматов png, jpg, jpeg, gif.'
+          )
+        )
+      }
+
       fileName = uuidv4() + '.jpg'
       const tempFilePath = path.resolve(imagesDir, 'temp-' + fileName)
       const finalFilePath = path.resolve(imagesDir, fileName)
 
-      await photo.mv(tempFilePath)
+      try {
+        await photo.mv(tempFilePath)
 
-      await sharp(tempFilePath)
-        .resize(225, 225)
-        .toFormat('jpeg')
-        .toFile(finalFilePath)
+        await sharp(tempFilePath)
+          .resize(225, 225)
+          .toFormat('jpeg')
+          .toFile(finalFilePath)
 
-      fs.unlinkSync(tempFilePath)
+        fs.unlinkSync(tempFilePath)
 
-      if (profile.photo !== 'user.png') {
-        const oldPath = path.resolve(imagesDir, profile.photo)
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath)
+        if (profile.photo !== 'user.png') {
+          const oldPath = path.resolve(imagesDir, profile.photo)
+          if (fs.existsSync(oldPath)) {
+            fs.unlinkSync(oldPath)
+          }
         }
+      } catch (err) {
+        if (fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath)
+        }
+        return next(ApiError.internal('Ошибка обработки изображения.'))
       }
     }
 

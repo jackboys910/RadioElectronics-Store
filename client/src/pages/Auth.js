@@ -9,6 +9,10 @@ import { registration } from '../http/userAPI'
 import { observer } from 'mobx-react-lite'
 import { Context } from '../index'
 import { handleLogin } from '../utils/handleLogin'
+import {
+  registrationValidationSchema,
+  loginValidationSchema,
+} from '../utils/validation/authValidation'
 
 const Auth = observer(() => {
   const { user, basket } = useContext(Context)
@@ -17,8 +21,36 @@ const Auth = observer(() => {
   const isLogin = location.pathname === LOGIN_ROUTE
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [errors, setErrors] = useState({})
+
+  const validationSchema = isLogin
+    ? loginValidationSchema
+    : registrationValidationSchema
+
+  const validate = async () => {
+    try {
+      await validationSchema.validate(
+        { email, password },
+        { abortEarly: false }
+      )
+      setErrors({})
+      return true
+    } catch (validationErrors) {
+      const validationResult = {}
+      validationErrors.inner.forEach((error) => {
+        validationResult[error.path] = error.message
+      })
+      setErrors(validationResult)
+      return false
+    }
+  }
 
   const click = async () => {
+    const isValid = await validate()
+    if (!isValid) {
+      return
+    }
+
     try {
       if (isLogin) {
         await handleLogin(email, password, user, basket)
@@ -53,14 +85,22 @@ const Auth = observer(() => {
             placeholder="Введите ваш email..."
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            isInvalid={!!errors.email}
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.email}
+          </Form.Control.Feedback>
           <Form.Control
             className="mt-3"
             placeholder="Введите ваш пароль..."
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
+            isInvalid={!!errors.password}
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.password}
+          </Form.Control.Feedback>
           <Row className="d-flex justify-content-between mt-3 pl-3 pr-3">
             {isLogin ? (
               <div>

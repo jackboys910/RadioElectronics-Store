@@ -3,6 +3,7 @@ import { Context } from '../index'
 import { Button, Container, Form, Image, Spinner } from 'react-bootstrap'
 import { observer } from 'mobx-react-lite'
 import { fetchProfile, updateProfile } from '../http/profileAPI'
+import { profileValidationSchema } from '../utils/validation/profileValidation'
 
 const Profile = observer(() => {
   const { profile, user } = useContext(Context)
@@ -57,23 +58,53 @@ const Profile = observer(() => {
     setErrors({ ...errors, [e.target.name]: false })
   }
 
-  const validateForm = () => {
-    const newErrors = {}
-    if (!form.firstName) newErrors.firstName = true
-    if (!form.lastName) newErrors.lastName = true
-    if (!form.phone) newErrors.phone = true
-    if (!form.address) newErrors.address = true
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+  // const validateForm = () => {
+  //   const newErrors = {}
+  //   if (!form.firstName) newErrors.firstName = true
+  //   if (!form.lastName) newErrors.lastName = true
+  //   if (!form.phone) newErrors.phone = true
+  //   if (!form.address) newErrors.address = true
+  //   setErrors(newErrors)
+  //   return Object.keys(newErrors).length === 0
+  // }
+
+  const validateForm = async () => {
+    try {
+      await profileValidationSchema.validate(form, { abortEarly: false })
+      setErrors({})
+      return true
+    } catch (err) {
+      const newErrors = {}
+      err.inner.forEach((error) => {
+        newErrors[error.path] = error.message
+      })
+      setErrors(newErrors)
+      return false
+    }
   }
 
-  const handleFileChange = (e) => {
-    setForm({ ...form, photo: e.target.files[0] })
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0]
+    setForm({ ...form, photo: file })
+
+    if (file) {
+      try {
+        await profileValidationSchema.validateAt('photo', { photo: file })
+        setErrors({ ...errors, photo: null })
+      } catch (error) {
+        setErrors({ ...errors, photo: error.message })
+      }
+    }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validateForm()) {
+    const isValid = await validateForm()
+    if (!isValid) {
+      return
+    }
+
+    if (errors.photo) {
       return
     }
 
@@ -169,8 +200,12 @@ const Profile = observer(() => {
           <Form.Control
             type="file"
             onChange={handleFileChange}
+            isInvalid={!!errors.photo}
             style={{ cursor: 'pointer', width: 255 }}
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.photo}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>
@@ -183,6 +218,9 @@ const Profile = observer(() => {
             onChange={handleInputChange}
             isInvalid={errors.firstName}
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.firstName}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>
@@ -195,6 +233,9 @@ const Profile = observer(() => {
             onChange={handleInputChange}
             isInvalid={errors.lastName}
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.lastName}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>
@@ -207,6 +248,9 @@ const Profile = observer(() => {
             onChange={handleInputChange}
             isInvalid={errors.phone}
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.phone}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>
@@ -219,6 +263,9 @@ const Profile = observer(() => {
             onChange={handleInputChange}
             isInvalid={errors.address}
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.address}
+          </Form.Control.Feedback>
         </Form.Group>
         <Button variant="primary" type="submit">
           Сохранить изменения

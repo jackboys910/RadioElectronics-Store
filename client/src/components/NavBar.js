@@ -12,7 +12,7 @@ import {
 import { Button, Badge } from 'react-bootstrap'
 import { observer } from 'mobx-react-lite'
 import Container from 'react-bootstrap/Container'
-import { FaBasketShopping } from 'react-icons/fa6'
+import { FaBasketShopping, FaMicrochip } from 'react-icons/fa6'
 import { FaUser } from 'react-icons/fa6'
 import { useHistory } from 'react-router-dom'
 
@@ -30,8 +30,19 @@ const NavBar = observer(() => {
   return (
     <Navbar bg="dark" variant="dark">
       <Container>
-        <NavLink style={{ color: 'white' }} to={SHOP_ROUTE}>
-          КупиДевайс
+        <NavLink
+          style={{
+            color: 'white',
+            textDecoration: 'none',
+            fontSize: 20,
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+          to={SHOP_ROUTE}
+        >
+          <FaMicrochip style={{ marginRight: 10, color: 'cyan' }} size={30} />
+          РадиоКомпоненты
         </NavLink>
         {user.isAuth ? (
           <Nav className="ml-auto" style={{ color: 'white' }}>

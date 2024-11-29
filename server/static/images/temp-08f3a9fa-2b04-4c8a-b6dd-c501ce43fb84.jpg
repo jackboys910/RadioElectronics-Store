@@ -1,0 +1,21 @@
+"InstallConfigStore"
+{
+	"Software"
+	{
+		"Valve"
+		{
+			"Steam"
+			{
+				"AutoUpdateWindowEnabled"		"0"
+				"ipv6check_http_state"		"bad"
+				"ShaderCacheManager"
+				{
+					"HasCurrentBucket"		"1"
+					"CurrentBucketGPU"		""
+					"CurrentBucketDriver"		""
+				}
+				"ipv6check_udp_state"		"bad"
+			}
+		}
+	}
+}
