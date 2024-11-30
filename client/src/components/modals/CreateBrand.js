@@ -2,15 +2,23 @@ import React, { useState } from 'react'
 import Modal from 'react-bootstrap/Modal'
 import { Button, Form } from 'react-bootstrap'
 import { createBrand } from '../../http/deviceAPI'
+import { createBrandValidationSchema } from '../../utils/validation/adminPanelValidation'
 
 const CreateBrand = ({ show, onHide }) => {
   const [value, setValue] = useState('')
+  const [error, setError] = useState('')
 
-  const addBrand = () => {
-    createBrand({ name: value }).then((data) => {
-      setValue('')
-      onHide()
-    })
+  const addBrand = async () => {
+    try {
+      await createBrandValidationSchema.validate({ brand: value })
+
+      createBrand({ name: value }).then((data) => {
+        setValue('')
+        onHide()
+      })
+    } catch (error) {
+      setError(error.message)
+    }
   }
   return (
     <Modal show={show} onHide={onHide} centered>
@@ -25,7 +33,9 @@ const CreateBrand = ({ show, onHide }) => {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={'Введите название типа'}
+            isInvalid={!!error}
           />
+          <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
         </Form>
       </Modal.Body>
       <Modal.Footer>

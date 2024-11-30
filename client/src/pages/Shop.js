@@ -16,7 +16,7 @@ const Shop = observer(() => {
   useEffect(() => {
     fetchTypes().then((data) => device.setTypes(data))
     fetchBrands().then((data) => device.setBrands(data))
-    fetchDevices(null, null, 1, 2).then((data) => {
+    fetchDevices(null, null, 1, 8).then((data) => {
       device.setDevices(data.rows)
       device.setTotalCount(data.count)
     })
@@ -27,7 +27,7 @@ const Shop = observer(() => {
       device.selectedType.id,
       device.selectedBrand.id,
       device.page,
-      2
+      8
     ).then((data) => {
       device.setDevices(data.rows)
       device.setTotalCount(data.count)
@@ -35,15 +35,19 @@ const Shop = observer(() => {
   }, [device.page, device.selectedType, device.selectedBrand])
 
   return (
-    <Container>
+    <Container style={{ marginBottom: 20 }}>
       <Row className="mt-2">
         <Col md={3}>
           <TypeBar />
         </Col>
         <Col md={9}>
           <BrandBar />
-          <DeviceList />
-          <Pages />
+          <div style={{ marginTop: 60 }}>
+            <Pages />
+            <DeviceList />
+          </div>
+          {/* <DeviceList />
+          <Pages /> */}
         </Col>
       </Row>
     </Container>

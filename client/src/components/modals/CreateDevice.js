@@ -4,13 +4,15 @@ import { Button, Dropdown, Form, Row, Col } from 'react-bootstrap'
 import { Context } from '../../index'
 import { createDevice, fetchBrands, fetchTypes } from '../../http/deviceAPI'
 import { observer } from 'mobx-react-lite'
+import { createDeviceValidationSchema } from '../../utils/validation/adminPanelValidation'
 
 const CreateDevice = observer(({ show, onHide }) => {
   const { device } = useContext(Context)
   const [name, setName] = useState('')
-  const [price, setPrice] = useState(0)
+  const [price, setPrice] = useState('')
   const [file, setFile] = useState(null)
   const [info, setInfo] = useState([])
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     fetchTypes().then((data) => device.setTypes(data))
@@ -31,15 +33,28 @@ const CreateDevice = observer(({ show, onHide }) => {
     setFile(e.target.files[0])
   }
 
-  const addDevice = () => {
-    const formData = new FormData()
-    formData.append('name', name)
-    formData.append('price', `${price}`)
-    formData.append('img', file)
-    formData.append('brandId', device.selectedBrand.id)
-    formData.append('typeId', device.selectedType.id)
-    formData.append('info', JSON.stringify(info))
-    createDevice(formData).then((data) => onHide())
+  const addDevice = async () => {
+    try {
+      await createDeviceValidationSchema.validate(
+        { name, price, file },
+        { abortEarly: false }
+      )
+
+      const formData = new FormData()
+      formData.append('name', name)
+      formData.append('price', `${price}`)
+      formData.append('img', file)
+      formData.append('brandId', device.selectedBrand.id)
+      formData.append('typeId', device.selectedType.id)
+      formData.append('info', JSON.stringify(info))
+      createDevice(formData).then((data) => onHide())
+    } catch (error) {
+      const validationErrors = {}
+      error.inner.forEach((error) => {
+        validationErrors[error.path] = error.message
+      })
+      setErrors(validationErrors)
+    }
   }
 
   return (
@@ -86,15 +101,32 @@ const CreateDevice = observer(({ show, onHide }) => {
             onChange={(e) => setName(e.target.value)}
             className="mt-3"
             placeholder="Введите название устройства"
+            isInvalid={!!errors.name}
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.name}
+          </Form.Control.Feedback>
           <Form.Control
             value={price}
             onChange={(e) => setPrice(Number(e.target.value))}
             className="mt-3"
             placeholder="Введите стоимость устройства"
             type="number"
+            isInvalid={!!errors.price}
           />
-          <Form.Control className="mt-3" type="file" onChange={selectFile} />
+          <Form.Control.Feedback type="invalid">
+            {errors.price}
+          </Form.Control.Feedback>
+          <Form.Control
+            className="mt-3"
+            type="file"
+            onChange={selectFile}
+            isInvalid={!!errors.file}
+            style={{ cursor: 'pointer', width: 255 }}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.file}
+          </Form.Control.Feedback>
           <hr />
           <Button variant={'outline-dark'} onClick={addInfo}>
             Добавить новое свойство
