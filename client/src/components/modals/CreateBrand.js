@@ -1,10 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
+import { observer } from 'mobx-react-lite'
 import Modal from 'react-bootstrap/Modal'
 import { Button, Form } from 'react-bootstrap'
-import { createBrand } from '../../http/deviceAPI'
+import { createBrand, fetchBrands } from '../../http/deviceAPI'
 import { createBrandValidationSchema } from '../../utils/validation/adminPanelValidation'
+import { Context } from '../../index'
 
-const CreateBrand = ({ show, onHide }) => {
+const CreateBrand = observer(({ show, onHide }) => {
+  const { device } = useContext(Context)
   const [value, setValue] = useState('')
   const [error, setError] = useState('')
 
@@ -12,19 +15,23 @@ const CreateBrand = ({ show, onHide }) => {
     try {
       await createBrandValidationSchema.validate({ brand: value })
 
-      createBrand({ name: value }).then((data) => {
-        setValue('')
-        onHide()
-      })
+      await createBrand({ name: value })
+
+      const updatedBrands = await fetchBrands()
+      device.setBrands(updatedBrands)
+
+      setValue('')
+      setError('')
+      onHide()
     } catch (error) {
-      setError(error.message)
+      setError(error.response?.data?.message || error.message)
     }
   }
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
         <Modal.Title id="contained-modal-title-vcenter">
-          Добавить тип
+          Добавить бренд
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -32,7 +39,7 @@ const CreateBrand = ({ show, onHide }) => {
           <Form.Control
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder={'Введите название типа'}
+            placeholder={'Введите название бренда'}
             isInvalid={!!error}
           />
           <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
@@ -48,6 +55,6 @@ const CreateBrand = ({ show, onHide }) => {
       </Modal.Footer>
     </Modal>
   )
-}
+})
 
 export default CreateBrand

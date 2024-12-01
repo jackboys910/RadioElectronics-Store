@@ -2,7 +2,12 @@ import React, { useContext, useEffect, useState } from 'react'
 import Modal from 'react-bootstrap/Modal'
 import { Button, Dropdown, Form, Row, Col } from 'react-bootstrap'
 import { Context } from '../../index'
-import { createDevice, fetchBrands, fetchTypes } from '../../http/deviceAPI'
+import {
+  createDevice,
+  fetchBrands,
+  fetchTypes,
+  fetchDevices,
+} from '../../http/deviceAPI'
 import { observer } from 'mobx-react-lite'
 import { createDeviceValidationSchema } from '../../utils/validation/adminPanelValidation'
 
@@ -47,12 +52,36 @@ const CreateDevice = observer(({ show, onHide }) => {
       formData.append('brandId', device.selectedBrand.id)
       formData.append('typeId', device.selectedType.id)
       formData.append('info', JSON.stringify(info))
-      createDevice(formData).then((data) => onHide())
+      await createDevice(formData)
+
+      const updatedTypes = await fetchTypes()
+      const updatedBrands = await fetchBrands()
+      const updatedDevices = await fetchDevices()
+      device.setTypes(updatedTypes)
+      device.setBrands(updatedBrands)
+      device.setDevices(updatedDevices.rows || [])
+
+      setName('')
+      setPrice('')
+      setFile(null)
+      setInfo([])
+      onHide()
     } catch (error) {
       const validationErrors = {}
-      error.inner.forEach((error) => {
-        validationErrors[error.path] = error.message
-      })
+
+      if (error.inner) {
+        error.inner.forEach((err) => {
+          validationErrors[err.path] = err.message
+        })
+      } else {
+        if (error.message === 'Выберите тип устройства') {
+          validationErrors.type = error.message
+        }
+        if (error.message === 'Выберите бренд устройства') {
+          validationErrors.brand = error.message
+        }
+      }
+
       setErrors(validationErrors)
     }
   }
@@ -70,7 +99,7 @@ const CreateDevice = observer(({ show, onHide }) => {
             <Dropdown.Toggle>
               {device.selectedType.name || 'Выберите тип'}
             </Dropdown.Toggle>
-            <Dropdown.Menu>
+            <Dropdown.Menu style={{ maxHeight: '300px', overflowY: 'scroll' }}>
               {device.types.map((type) => (
                 <Dropdown.Item
                   onClick={() => device.setSelectedType(type)}
@@ -83,9 +112,9 @@ const CreateDevice = observer(({ show, onHide }) => {
           </Dropdown>
           <Dropdown className="mt-2 mb-2">
             <Dropdown.Toggle>
-              {device.selectedBrand.name || 'Выберите тип'}
+              {device.selectedBrand.name || 'Выберите бренд'}
             </Dropdown.Toggle>
-            <Dropdown.Menu>
+            <Dropdown.Menu style={{ maxHeight: '300px', overflowY: 'scroll' }}>
               {device.brands.map((brand) => (
                 <Dropdown.Item
                   onClick={() => device.setSelectedBrand(brand)}
