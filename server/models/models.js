@@ -45,10 +45,6 @@ const DeviceInfo = sequelize.define('device_info', {
   description: { type: DataTypes.STRING, allowNull: false },
 })
 
-const TypeBrand = sequelize.define('type_brand', {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-})
-
 const Profile = sequelize.define('profile', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   userId: { type: DataTypes.INTEGER, allowNull: false, unique: true },
@@ -57,6 +53,18 @@ const Profile = sequelize.define('profile', {
   phone: { type: DataTypes.STRING },
   address: { type: DataTypes.STRING },
   photo: { type: DataTypes.STRING, defaultValue: 'user.png' },
+})
+
+const Transaction = sequelize.define('transaction', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  userId: { type: DataTypes.INTEGER, allowNull: false },
+  devices: { type: DataTypes.JSON, allowNull: false },
+  totalPrice: { type: DataTypes.INTEGER, allowNull: false },
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
 })
 
 User.hasOne(Basket)
@@ -83,11 +91,11 @@ BasketDevice.belongsTo(Device)
 Device.hasMany(DeviceInfo, { as: 'info' })
 DeviceInfo.belongsTo(Device)
 
-Type.belongsToMany(Brand, { through: TypeBrand })
-Brand.belongsToMany(Type, { through: TypeBrand })
-
 User.hasOne(Profile)
 Profile.belongsTo(User)
+
+User.hasMany(Transaction)
+Transaction.belongsTo(User)
 
 module.exports = {
   User,
@@ -97,7 +105,7 @@ module.exports = {
   Type,
   Brand,
   Rating,
-  TypeBrand,
   DeviceInfo,
   Profile,
+  Transaction,
 }

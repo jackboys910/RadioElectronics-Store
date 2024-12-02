@@ -42,7 +42,7 @@ const Basket = observer(() => {
       .finally(() => {
         profile.setLoading(false)
       })
-  }, [])
+  }, [basket, profile])
 
   const checkProfileFields = () => {
     const { firstName, lastName, phone, address } = profile.profile || {}
@@ -52,8 +52,6 @@ const Basket = observer(() => {
   const handleOrder = () => {
     if (!checkProfileFields()) {
       setShowProfileModal(true)
-      // history.push(PROFILE_ROUTE)
-      // profile.setError('Пожалуйста, заполните обязательные поля профиля.')
     } else {
       setShowModal(true)
     }
@@ -65,15 +63,20 @@ const Basket = observer(() => {
 
   const handlePayment = () => {
     setIsLoading(true)
+    setTimeout(async () => {
+      try {
+        await basket.handlePayment()
+        setIsLoading(false)
+        setPaymentSuccess(true)
 
-    setTimeout(() => {
-      setIsLoading(false)
-      setPaymentSuccess(true)
-
-      setTimeout(() => {
-        basket.clearBasket()
-        setShowModal(false)
-      }, 5000)
+        setTimeout(() => {
+          basket.clearBasket()
+          setShowModal(false)
+        }, 5000)
+      } catch (error) {
+        console.error('Ошибка при завершении транзакции:', error)
+        setIsLoading(false)
+      }
     }, 2000)
   }
 
@@ -84,33 +87,35 @@ const Basket = observer(() => {
         <h3>Ваша корзина пуста</h3>
       ) : (
         <>
-          {basket.basketDevices.map(({ id, device }) => (
-            <Row key={id} className="d-flex align-items-center mb-3">
-              <Col md={2}>
-                <Image
-                  width={100}
-                  height={100}
-                  src={
-                    device?.img
-                      ? process.env.REACT_APP_API_URL + device.img
-                      : ''
-                  }
-                />
-              </Col>
-              <Col title={device.name} md={4}>
-                {truncate(device.name, 26)}
-              </Col>
-              <Col md={2}>
-                {device.price} руб. (
-                {usdRate ? (device.price * usdRate).toFixed(2) : '...'}$)
-              </Col>
-              <Col md={2}>
-                <Button variant="danger" onClick={() => handleRemove(id)}>
-                  Удалить
-                </Button>
-              </Col>
-            </Row>
-          ))}
+          {basket.basketDevices.map(({ id, device }) =>
+            device ? (
+              <Row key={id} className="d-flex align-items-center mb-3">
+                <Col md={2}>
+                  <Image
+                    width={100}
+                    height={100}
+                    src={
+                      device?.img
+                        ? process.env.REACT_APP_API_URL + device.img
+                        : ''
+                    }
+                  />
+                </Col>
+                <Col title={device.name} md={4}>
+                  {truncate(device.name, 26)}
+                </Col>
+                <Col md={2}>
+                  {device.price} руб. (
+                  {usdRate ? (device.price * usdRate).toFixed(2) : '...'}$)
+                </Col>
+                <Col md={2}>
+                  <Button variant="danger" onClick={() => handleRemove(id)}>
+                    Удалить
+                  </Button>
+                </Col>
+              </Row>
+            ) : null
+          )}
           <Row className="mt-4">
             <Col md={6}>
               <h4>

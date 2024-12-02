@@ -1,6 +1,6 @@
 const uuid = require('uuid')
 const path = require('path')
-const { Device, DeviceInfo } = require('../models/models')
+const { Device, DeviceInfo, BasketDevice } = require('../models/models')
 const ApiError = require('../error/ApiError')
 
 class DeviceController {
@@ -106,10 +106,14 @@ class DeviceController {
   async delete(req, res, next) {
     try {
       const { id } = req.params
+
+      await BasketDevice.destroy({ where: { deviceId: id } })
+
       const deletedRowsCount = await Device.destroy({ where: { id } })
       if (!deletedRowsCount) {
         return next(ApiError.badRequest('Устройство не найдено'))
       }
+
       return res.json({ message: 'Устройство удалено', id })
     } catch (e) {
       next(ApiError.internal(e.message))

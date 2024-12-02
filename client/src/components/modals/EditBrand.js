@@ -25,7 +25,7 @@ const EditBrand = observer(({ show, onHide }) => {
       setError('')
       onHide()
     } catch (err) {
-      setError(err.message)
+      setError('Такой бренд уже существует')
     }
   }
 

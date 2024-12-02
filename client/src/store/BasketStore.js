@@ -1,9 +1,10 @@
-import { makeAutoObservable } from 'mobx'
+import { makeAutoObservable, runInAction } from 'mobx'
 import {
   fetchBasket,
   addToBasket,
   removeFromBasket,
   clearBasket,
+  purchaseBasket,
 } from '../http/basketAPI'
 
 export default class BasketStore {
@@ -14,8 +15,10 @@ export default class BasketStore {
   }
 
   setBasketDevices(basketDevices) {
-    this._basketDevices = basketDevices
-    this._calculateTotalPrice()
+    runInAction(() => {
+      this._basketDevices = basketDevices
+      this._calculateTotalPrice()
+    })
   }
 
   addDeviceToBasket(basketDevice) {
@@ -31,19 +34,30 @@ export default class BasketStore {
       )
       return
     }
-    this._basketDevices.push(basketDevice)
-    this._calculateTotalPrice()
+    runInAction(() => {
+      this._basketDevices.push(basketDevice)
+      this._calculateTotalPrice()
+    })
   }
 
   removeDeviceFromBasket(id) {
-    this._basketDevices = this._basketDevices.filter((item) => item.id !== id)
-    this._calculateTotalPrice()
+    runInAction(() => {
+      this._basketDevices = this._basketDevices.filter((item) => item.id !== id)
+      this._calculateTotalPrice()
+    })
   }
 
   async fetchBasketDevices() {
     try {
       const data = await fetchBasket()
-      this.setBasketDevices(data.basket_devices || [])
+
+      const validBasketDevices = (data.basket_devices || []).filter(
+        (item) => item.device !== null
+      )
+
+      runInAction(() => {
+        this.setBasketDevices(validBasketDevices)
+      })
     } catch (error) {
       console.error('Ошибка при загрузке корзины:', error)
     }
@@ -59,7 +73,9 @@ export default class BasketStore {
         )
         return
       }
-      this.addDeviceToBasket(basketDevice)
+      runInAction(() => {
+        this.addDeviceToBasket(basketDevice)
+      })
     } catch (error) {
       console.error('Ошибка при добавлении устройства в корзину:', error)
     }
@@ -68,7 +84,9 @@ export default class BasketStore {
   async removeDevice(id) {
     try {
       await removeFromBasket(id)
-      this.removeDeviceFromBasket(id)
+      runInAction(() => {
+        this.removeDeviceFromBasket(id)
+      })
     } catch (error) {
       console.error('Ошибка при удалении устройства из корзины:', error)
     }
@@ -77,18 +95,36 @@ export default class BasketStore {
   async clearBasket() {
     try {
       await clearBasket()
-      this._basketDevices = []
-      this._totalPrice = 0
+      runInAction(() => {
+        this._basketDevices = []
+        this._totalPrice = 0
+      })
     } catch (error) {
       console.error('Ошибка при очистке корзины:', error)
     }
   }
 
+  async handlePayment() {
+    try {
+      const result = await purchaseBasket()
+      runInAction(() => {
+        setTimeout(() => {
+          this.clearBasket()
+        }, 5000)
+      })
+      return result
+    } catch (error) {
+      console.error('Ошибка при завершении транзакции:', error)
+    }
+  }
+
   _calculateTotalPrice() {
-    this._totalPrice = this._basketDevices.reduce((sum, item) => {
-      const device = item.device || item
-      return sum + (device.price || 0)
-    }, 0)
+    runInAction(() => {
+      this._totalPrice = this._basketDevices.reduce((sum, item) => {
+        const device = item.device || item
+        return sum + (device.price || 0)
+      }, 0)
+    })
   }
 
   get basketDevices() {

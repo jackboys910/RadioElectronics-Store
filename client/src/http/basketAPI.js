@@ -19,3 +19,8 @@ export const clearBasket = async () => {
   const { data } = await $authHost.delete('api/basket/clear')
   return data
 }
+
+export const purchaseBasket = async () => {
+  const { data } = await $authHost.post('api/basket/purchase')
+  return data
+}

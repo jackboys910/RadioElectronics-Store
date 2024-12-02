@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx'
+import { makeAutoObservable, runInAction } from 'mobx'
 
 export default class ProfileStore {
   constructor() {
@@ -9,15 +9,21 @@ export default class ProfileStore {
   }
 
   setProfile(profile) {
-    this._profile = profile
+    runInAction(() => {
+      this._profile = profile
+    })
   }
 
   setLoading(loading) {
-    this._loading = loading
+    runInAction(() => {
+      this._loading = loading
+    })
   }
 
   setError(error) {
-    this._error = error
+    runInAction(() => {
+      this._error = error
+    })
   }
 
   get profile() {

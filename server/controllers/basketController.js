@@ -1,4 +1,9 @@
-const { BasketDevice, Basket, Device } = require('../models/models')
+const {
+  BasketDevice,
+  Basket,
+  Device,
+  Transaction,
+} = require('../models/models')
 const ApiError = require('../error/ApiError')
 
 class BasketController {
@@ -40,7 +45,14 @@ class BasketController {
         return next(ApiError.internal('Корзина пользователя не найдена'))
       }
 
-      return res.json(basket)
+      const validBasketDevices = basket.basket_devices.filter(
+        (item) => item.device !== null
+      )
+
+      return res.json({
+        ...basket.dataValues,
+        basket_devices: validBasketDevices,
+      })
     } catch (e) {
       next(ApiError.internal(e.message))
     }
@@ -84,6 +96,42 @@ class BasketController {
       await BasketDevice.destroy({ where: { basketId: basket.id } })
 
       return res.json({ message: 'Корзина успешно очищена' })
+    } catch (error) {
+      next(ApiError.internal(error.message))
+    }
+  }
+
+  async createTransaction(req, res, next) {
+    try {
+      const userId = req.user.id
+      const basket = await Basket.findOne({
+        where: { userId },
+        include: [{ model: BasketDevice, include: [Device] }],
+      })
+
+      if (!basket || basket.basket_devices.length === 0) {
+        return next(ApiError.badRequest('Корзина пуста. Покупка невозможна.'))
+      }
+
+      const devices = basket.basket_devices.map((item) => ({
+        deviceId: item.device.id,
+        name: item.device.name,
+        price: item.device.price,
+      }))
+      const totalPrice = devices.reduce((sum, device) => sum + device.price, 0)
+
+      const transaction = await Transaction.create({
+        userId,
+        devices,
+        totalPrice,
+      })
+
+      await BasketDevice.destroy({ where: { basketId: basket.id } })
+
+      return res.json({
+        message: 'Покупка успешно завершена',
+        transaction,
+      })
     } catch (error) {
       next(ApiError.internal(error.message))
     }

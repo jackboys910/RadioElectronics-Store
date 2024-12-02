@@ -20,7 +20,7 @@ const Shop = observer(() => {
       device.setDevices(data.rows)
       device.setTotalCount(data.count)
     })
-  }, [])
+  }, [device])
 
   useEffect(() => {
     fetchDevices(
@@ -32,7 +32,7 @@ const Shop = observer(() => {
       device.setDevices(data.rows)
       device.setTotalCount(data.count)
     })
-  }, [device.page, device.selectedType, device.selectedBrand])
+  }, [device.page, device.selectedType, device.selectedBrand, device])
 
   return (
     <Container style={{ marginBottom: 20 }}>

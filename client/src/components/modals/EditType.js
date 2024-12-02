@@ -25,7 +25,7 @@ const EditType = observer(({ show, onHide }) => {
       setError('')
       onHide()
     } catch (err) {
-      setError(err.message)
+      setError('Такой тип уже существует')
     }
   }
 

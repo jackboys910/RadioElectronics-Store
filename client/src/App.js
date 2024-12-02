@@ -19,7 +19,7 @@ const App = observer(() => {
         basket.fetchBasketDevices()
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [basket, user])
 
   if (loading) {
     return <Spinner animation={'grow'} />
