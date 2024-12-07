@@ -1,0 +1,8 @@
+export const ADMIN_ROUTE = 'Admin'
+// export const LOGIN_ROUTE = 'login'
+export const AUTH_ROUTE = 'Auth'
+// export const REGISTRATION_ROUTE = 'registration'
+export const SHOP_ROUTE = 'index'
+export const BASKET_ROUTE = 'Basket'
+export const DEVICE_ROUTE = 'DevicePage'
+export const PROFILE_ROUTE = 'Profile'
