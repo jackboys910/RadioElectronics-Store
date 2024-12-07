@@ -32,15 +32,23 @@ export default class DeviceStore {
 
   setSelectedType(type) {
     runInAction(() => {
-      this.setPage(1)
-      this._selectedType = type
+      if (this._selectedType.id === type.id) {
+        this._selectedType = {}
+      } else {
+        this.setPage(1)
+        this._selectedType = type
+      }
     })
   }
 
   setSelectedBrand(brand) {
     runInAction(() => {
-      this.setPage(1)
-      this._selectedBrand = brand
+      if (this._selectedBrand.id === brand.id) {
+        this._selectedBrand = {}
+      } else {
+        this.setPage(1)
+        this._selectedBrand = brand
+      }
     })
   }
 

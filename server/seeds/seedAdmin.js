@@ -9,7 +9,7 @@ const createAdmin = async () => {
     console.log('Connection has been established successfully.')
 
     const adminEmail = 'admin@gmail.com'
-    const hashPassword = await bcrypt.hash('toChange', 5)
+    const hashPassword = await bcrypt.hash('admin', 5)
 
     const admin = await User.findOne({ where: { email: adminEmail } })
     if (!admin) {
