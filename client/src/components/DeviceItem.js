@@ -82,7 +82,7 @@ const DeviceItem = ({ device }) => {
             <Image width={18} height={18} src={star} />
           </div>
         </div>
-        <div>{truncate(device.name, 18)}</div>
+        <div>{truncate(device.name, 15)}</div>
       </Card>
     </Col>
   )

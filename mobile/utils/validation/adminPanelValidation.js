@@ -14,7 +14,7 @@ export const createTypeValidationSchema = Yup.object().shape({
 
 export const createDeviceValidationSchema = Yup.object().shape({
   name: Yup.string()
-    .max(20, 'Название устройства не должно превышать 20 символов')
+    .max(25, 'Название устройства не должно превышать 25 символов')
     .required('Название устройства обязательно'),
   price: Yup.string()
     .max(20, 'Стоимость не должна превышать 20 символов')

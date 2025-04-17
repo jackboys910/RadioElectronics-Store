@@ -5,5 +5,11 @@ const authMiddleware = require('../middleware/authMiddleware')
 
 router.get('/', authMiddleware, profileController.getProfile)
 router.put('/', authMiddleware, profileController.updateProfile)
+router.get('/orders', authMiddleware, profileController.getUserOrders)
+router.put(
+  '/orders/:transactionId/cancel',
+  authMiddleware,
+  profileController.cancelOrder
+)
 
 module.exports = router

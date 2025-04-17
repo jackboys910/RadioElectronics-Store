@@ -99,7 +99,7 @@ const DevicePage = () => {
           </Box>
           <VStack flex={2} space={4}>
             <Text fontSize="2xl" fontWeight="bold">
-              {truncate(device.name, 30)}
+              {truncate(device.name, 25)}
             </Text>
             <Text fontSize="lg" color="gray.500">
               Цена: {device.price} руб.

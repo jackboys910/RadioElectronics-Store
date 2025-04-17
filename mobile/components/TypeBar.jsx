@@ -7,23 +7,30 @@ const TypeBar = observer(() => {
   const { device } = useContext(Context)
 
   return (
-    <VStack space={2}>
-      {device.types.map((type) => (
-        <Pressable key={type.id} onPress={() => device.setSelectedType(type)}>
-          <Box
-            bg={type.id === device.selectedType.id ? 'primary.500' : 'gray.200'}
-            p={2}
-            borderRadius="md"
-          >
-            <Text
-              color={type.id === device.selectedType.id ? 'white' : 'black'}
+    <React.Fragment>
+      <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 3 }}>
+        Типы
+      </Text>
+      <VStack space={2}>
+        {device.types.map((type) => (
+          <Pressable key={type.id} onPress={() => device.setSelectedType(type)}>
+            <Box
+              bg={
+                type.id === device.selectedType.id ? 'primary.500' : 'gray.200'
+              }
+              p={2}
+              borderRadius="md"
             >
-              {type.name}
-            </Text>
-          </Box>
-        </Pressable>
-      ))}
-    </VStack>
+              <Text
+                color={type.id === device.selectedType.id ? 'white' : 'black'}
+              >
+                {type.name}
+              </Text>
+            </Box>
+          </Pressable>
+        ))}
+      </VStack>
+    </React.Fragment>
   )
 })
 

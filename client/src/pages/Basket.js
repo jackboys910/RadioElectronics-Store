@@ -102,7 +102,7 @@ const Basket = observer(() => {
                   />
                 </Col>
                 <Col title={device.name} md={4}>
-                  {truncate(device.name, 26)}
+                  {truncate(device.name, 25)}
                 </Col>
                 <Col md={2}>
                   {device.price} руб. (

@@ -125,7 +125,7 @@ const Basket = observer(() => {
                     />
                     <VStack flex={1} mx={3}>
                       <Text fontWeight="bold" isTruncated>
-                        {truncate(item.device.name, 26)}
+                        {truncate(item.device.name, 25)}
                       </Text>
                       <Text>
                         {item.device.price} руб.

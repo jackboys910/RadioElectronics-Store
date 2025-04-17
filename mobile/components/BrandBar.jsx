@@ -7,26 +7,31 @@ const BrandBar = observer(() => {
   const { device } = useContext(Context)
 
   return (
-    <HStack space={2} flexWrap="wrap">
-      {device.brands.map((brand) => (
-        <Pressable
-          key={brand.id}
-          onPress={() => device.setSelectedBrand(brand)}
-        >
-          <Box
-            p={3}
-            borderWidth={1}
-            borderColor={
-              brand.id === device.selectedBrand.id ? 'danger.500' : 'gray.300'
-            }
-            borderRadius="md"
-            bg={brand.id === device.selectedBrand.id ? 'danger.100' : 'white'}
+    <React.Fragment>
+      <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 3 }}>
+        Бренды
+      </Text>
+      <HStack space={2} flexWrap="wrap">
+        {device.brands.map((brand) => (
+          <Pressable
+            key={brand.id}
+            onPress={() => device.setSelectedBrand(brand)}
           >
-            <Text>{brand.name}</Text>
-          </Box>
-        </Pressable>
-      ))}
-    </HStack>
+            <Box
+              p={3}
+              borderWidth={1}
+              borderColor={
+                brand.id === device.selectedBrand.id ? 'danger.500' : 'gray.300'
+              }
+              borderRadius="md"
+              bg={brand.id === device.selectedBrand.id ? 'danger.100' : 'white'}
+            >
+              <Text>{brand.name}</Text>
+            </Box>
+          </Pressable>
+        ))}
+      </HStack>
+    </React.Fragment>
   )
 })
 

@@ -45,7 +45,7 @@ const DeviceItem = ({ device }) => {
         <VStack mt={2}>
           <HStack justifyContent="space-between" alignItems="center">
             <Text fontSize="sm" color="gray.500">
-              {truncate(device.name, 11)}
+              {truncate(device.name, 10)}
             </Text>
             <View style={{ display: 'flex', flexDirection: 'row' }}>
               <AntDesign

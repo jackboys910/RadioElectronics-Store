@@ -103,9 +103,9 @@ const DevicePage = () => {
           >
             <h2
               title={device.name}
-              style={{ fontSize: '2rem', letterSpacing: '0.5px' }}
+              style={{ fontSize: '1.8rem', letterSpacing: '0.5px' }}
             >
-              {truncate(device.name, 20)}
+              {truncate(device.name, 25)}
             </h2>
           </div>
           <div className="text-center mb-4">

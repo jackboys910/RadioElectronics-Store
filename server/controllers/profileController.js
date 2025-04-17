@@ -1,4 +1,4 @@
-const { Profile } = require('../models/models')
+const { Profile, Transaction } = require('../models/models')
 const ApiError = require('../error/ApiError')
 const path = require('path')
 const { v4: uuidv4 } = require('uuid')
@@ -95,6 +95,48 @@ class ProfileController {
       photo: fileName,
     })
     return res.json(profile)
+  }
+
+  async getUserOrders(req, res, next) {
+    try {
+      const userId = req.user.id
+      const transactions = await Transaction.findAll({
+        where: { userId },
+        order: [['createdAt', 'DESC']],
+      })
+
+      return res.json(transactions)
+    } catch (err) {
+      next(ApiError.internal('Ошибка при загрузке заказов.'))
+    }
+  }
+
+  async cancelOrder(req, res, next) {
+    try {
+      const userId = req.user.id
+      const { transactionId } = req.params
+
+      const transaction = await Transaction.findOne({
+        where: { id: transactionId, userId },
+      })
+
+      if (!transaction) {
+        return next(ApiError.badRequest('Заказ не найден'))
+      }
+
+      if (transaction.isCanceled) {
+        return next(ApiError.badRequest('Заказ уже отменен'))
+      }
+
+      await transaction.update({
+        isCanceled: true,
+        canceledAt: new Date(),
+      })
+
+      return res.json({ message: 'Заказ успешно отменен.', transaction })
+    } catch (err) {
+      next(ApiError.internal('Ошибка при отмене заказа.'))
+    }
   }
 }
 
