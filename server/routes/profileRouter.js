@@ -11,5 +11,6 @@ router.put(
   authMiddleware,
   profileController.cancelOrder
 )
+router.get('/:id', authMiddleware, profileController.getOrderDetails)
 
 module.exports = router

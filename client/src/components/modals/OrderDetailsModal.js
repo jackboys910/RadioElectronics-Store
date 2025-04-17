@@ -1,8 +1,9 @@
 import React from 'react'
 import { Modal, Button, Table, Image } from 'react-bootstrap'
+import { truncate } from '../../utils/truncate'
 
 const OrderDetailsModal = ({ show, onHide, order, usdRate }) => {
-  if (!order || !order.items) return null
+  if (!order || !order.devices) return null
 
   return (
     <Modal show={show} onHide={onHide} centered>
@@ -15,19 +16,18 @@ const OrderDetailsModal = ({ show, onHide, order, usdRate }) => {
             <tr>
               <th>Фото</th>
               <th>Название</th>
-              <th>Количество</th>
               <th>Цена (руб.)</th>
               <th>Цена ($)</th>
             </tr>
           </thead>
           <tbody>
-            {order.items.map((item) => (
-              <tr key={item.id}>
+            {order.devices.map((device, index) => (
+              <tr key={index}>
                 <td>
                   <Image
                     src={
-                      item.img
-                        ? `${process.env.REACT_APP_API_URL}${item.img}`
+                      device.img
+                        ? process.env.REACT_APP_API_URL + device.img
                         : ''
                     }
                     rounded
@@ -35,10 +35,11 @@ const OrderDetailsModal = ({ show, onHide, order, usdRate }) => {
                     height={50}
                   />
                 </td>
-                <td>{item.name}</td>
-                <td>{item.quantity}</td>
-                <td>{item.price}</td>
-                <td>{usdRate ? (item.price * usdRate).toFixed(2) : '...'}$</td>
+                <td>{truncate(device.name, 15)}</td>
+                <td>{device.price}</td>
+                <td>
+                  {usdRate ? (device.price * usdRate).toFixed(2) : '...'}$
+                </td>
               </tr>
             ))}
           </tbody>

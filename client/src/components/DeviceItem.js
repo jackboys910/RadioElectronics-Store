@@ -76,7 +76,6 @@ const DeviceItem = ({ device }) => {
           src={process.env.REACT_APP_API_URL + device.img}
         />
         <div className="text-black-50 mt-1 d-flex justify-content-end align-items-center">
-          {/* <div>Samsung...</div> */}
           <div className="d-flex align-items-center">
             <div>{averageRating.toFixed(1)}</div>
             <Image width={18} height={18} src={star} />

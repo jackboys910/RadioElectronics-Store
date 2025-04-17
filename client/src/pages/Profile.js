@@ -13,7 +13,11 @@ import {
   Col,
 } from 'react-bootstrap'
 import { observer } from 'mobx-react-lite'
-import { fetchProfile, updateProfile } from '../http/profileAPI'
+import {
+  fetchProfile,
+  updateProfile,
+  fetchOrderDetails,
+} from '../http/profileAPI'
 import { fetchExchangeRate } from '../http/currencyAPI'
 import { profileValidationSchema } from '../utils/validation/profileValidation'
 import ConfirmationModal from '../components/modals/ConfirmationModal'
@@ -79,11 +83,7 @@ const Profile = observer(() => {
   }, [activeTab, transaction])
 
   useEffect(() => {
-    const fetchRate = async () => {
-      const rate = await fetchExchangeRate()
-      setUsdRate(rate)
-    }
-    fetchRate()
+    fetchExchangeRate().then((rate) => setUsdRate(rate))
   }, [])
 
   const handleInputChange = (e) => {
@@ -203,9 +203,14 @@ const Profile = observer(() => {
     }
   }
 
-  const handleViewOrderClick = (order) => {
-    setSelectedOrder(order)
-    setShowOrderDetailsModal(true)
+  const handleViewOrderClick = async (orderId) => {
+    try {
+      const orderDetails = await fetchOrderDetails(orderId)
+      setSelectedOrder(orderDetails)
+      setShowOrderDetailsModal(true)
+    } catch (error) {
+      console.error('Ошибка при загрузке деталей заказа:', error)
+    }
   }
 
   if (profile.loading) {
@@ -381,7 +386,7 @@ const Profile = observer(() => {
                       <div className="d-flex justify-content-between">
                         <Button
                           variant="info"
-                          onClick={() => handleViewOrderClick(order)}
+                          onClick={() => handleViewOrderClick(order.id)}
                           style={{ marginRight: '10px' }}
                         >
                           Посмотреть заказ

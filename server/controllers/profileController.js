@@ -1,4 +1,4 @@
-const { Profile, Transaction } = require('../models/models')
+const { Profile, Transaction, Device } = require('../models/models')
 const ApiError = require('../error/ApiError')
 const path = require('path')
 const { v4: uuidv4 } = require('uuid')
@@ -136,6 +136,35 @@ class ProfileController {
       return res.json({ message: 'Заказ успешно отменен.', transaction })
     } catch (err) {
       next(ApiError.internal('Ошибка при отмене заказа.'))
+    }
+  }
+
+  async getOrderDetails(req, res, next) {
+    try {
+      const { id } = req.params
+
+      const order = await Transaction.findOne({
+        where: { id },
+      })
+
+      if (!order) {
+        return res.status(404).json({ message: 'Заказ не найден' })
+      }
+
+      const devicesWithImages = await Promise.all(
+        order.devices.map(async (device) => {
+          const fullDevice = await Device.findOne({
+            where: { id: device.deviceId },
+            attributes: ['id', 'name', 'price', 'img'],
+          })
+
+          return { ...device, img: fullDevice?.img || null }
+        })
+      )
+
+      return res.json({ ...order.dataValues, devices: devicesWithImages })
+    } catch (error) {
+      next(ApiError.internal('Ошибка при загрузке деталей заказа.'))
     }
   }
 }

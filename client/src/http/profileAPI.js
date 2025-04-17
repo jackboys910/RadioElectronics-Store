@@ -15,6 +15,11 @@ export const fetchUserOrders = async () => {
   return data
 }
 
+export const fetchOrderDetails = async (orderId) => {
+  const { data } = await $authHost.get(`/api/profile/${orderId}`)
+  return data
+}
+
 export const cancelOrder = async (transactionId) => {
   const { data } = await $authHost.put(
     `/api/profile/orders/${transactionId}/cancel`
