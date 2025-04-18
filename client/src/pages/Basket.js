@@ -1,28 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react'
-import {
-  Container,
-  Row,
-  Col,
-  Image,
-  Button,
-  Modal,
-  Spinner,
-} from 'react-bootstrap'
-import { observer } from 'mobx-react-lite'
+import { Container, Row, Col, Image, Button, Modal } from 'react-bootstrap'
 import { FaCheck } from 'react-icons/fa'
+import { observer } from 'mobx-react-lite'
 import { useHistory } from 'react-router-dom'
+import { Elements } from '@stripe/react-stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
 import { PROFILE_ROUTE } from '../utils/consts'
 import { Context } from '../index'
 import { fetchExchangeRate } from '../http/currencyAPI'
 import { fetchProfile } from '../http/profileAPI'
 import { truncate } from '../utils/truncate'
+import CheckoutForm from '../components/CheckoutForm'
+
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY)
 
 const Basket = observer(() => {
   const { basket, profile } = useContext(Context)
   const [usdRate, setUsdRate] = useState(0)
-  const [showModal, setShowModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [paymentSuccess, setPaymentSuccess] = useState(false)
   const history = useHistory()
 
@@ -50,34 +46,20 @@ const Basket = observer(() => {
   }
 
   const handleOrder = () => {
-    if (!checkProfileFields()) {
-      setShowProfileModal(true)
-    } else {
-      setShowModal(true)
-    }
+    setShowProfileModal(true)
   }
 
   const handleRemove = async (id) => {
     basket.removeDevice(id)
   }
 
-  const handlePayment = () => {
-    setIsLoading(true)
-    setTimeout(async () => {
-      try {
-        await basket.handlePayment()
-        setIsLoading(false)
-        setPaymentSuccess(true)
-
-        setTimeout(() => {
-          basket.clearBasket()
-          setShowModal(false)
-        }, 5000)
-      } catch (error) {
-        console.error('Ошибка при завершении транзакции:', error)
-        setIsLoading(false)
-      }
-    }, 2000)
+  const handlePaymentSuccess = () => {
+    setPaymentSuccess(true)
+    setTimeout(() => {
+      setPaymentSuccess(false)
+      setShowPaymentModal(false)
+      setShowProfileModal(false)
+    }, 5000)
   }
 
   return (
@@ -143,80 +125,96 @@ const Basket = observer(() => {
           </Row>
         </>
       )}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Оплата заказа</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {paymentSuccess ? (
-            <div className="text-center">
-              <FaCheck size={50} color="green" />
-              <h4 className="mt-3">Оплата совершена!</h4>
-              <p>С вами свяжутся по контактному номеру.</p>
-            </div>
-          ) : (
-            <>
-              <div
-                style={{
-                  backgroundColor: '#f8f9fa',
-                  padding: '15px',
-                  borderRadius: '5px',
-                  marginBottom: '15px',
-                }}
-              >
-                <p>
-                  <strong>Имя:</strong> {profile.profile?.firstName}
-                </p>
-                <p>
-                  <strong>Фамилия:</strong> {profile.profile?.lastName}
-                </p>
-                <p>
-                  <strong>Адрес:</strong> {profile.profile?.address}
-                </p>
-                <p>
-                  <strong>Телефон:</strong> {profile.profile?.phone}
-                </p>
-              </div>
-              <Button
-                variant="primary"
-                className="w-100"
-                onClick={handlePayment}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Spinner animation="border" size="sm" />
-                ) : (
-                  'Оплатить заказ'
-                )}
-              </Button>
-            </>
-          )}
-        </Modal.Body>
-      </Modal>
       <Modal
         show={showProfileModal}
         onHide={() => setShowProfileModal(false)}
         centered
       >
         <Modal.Header closeButton>
-          <Modal.Title>Заполните профиль</Modal.Title>
+          <Modal.Title>Оформление заказа</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>
-            Чтобы оформить заказ, внесите, пожалуйста, личные данные в профиле.
-          </p>
+          {checkProfileFields() ? (
+            <div
+              style={{
+                backgroundColor: '#f8f9fa',
+                padding: '15px',
+                borderRadius: '5px',
+                marginBottom: '15px',
+              }}
+            >
+              <p>
+                <strong>Имя:</strong> {profile.profile?.firstName}
+              </p>
+              <p>
+                <strong>Фамилия:</strong> {profile.profile?.lastName}
+              </p>
+              <p>
+                <strong>Адрес:</strong> {profile.profile?.address}
+              </p>
+              <p>
+                <strong>Телефон:</strong> {profile.profile?.phone}
+              </p>
+            </div>
+          ) : (
+            <p>
+              Чтобы оформить заказ, внесите, пожалуйста, личные данные в
+              профиле.
+            </p>
+          )}
         </Modal.Body>
-        <Modal.Footer className="d-flex justify-content-center">
-          <Button
-            variant="primary"
-            onClick={() => {
-              setShowProfileModal(false)
-              history.push(PROFILE_ROUTE)
-            }}
-          >
-            Перейти в личный кабинет
-          </Button>
+        <Modal.Footer>
+          {checkProfileFields() ? (
+            <Button
+              variant="success"
+              onClick={() => {
+                setShowProfileModal(false)
+                setShowPaymentModal(true)
+              }}
+            >
+              Оплатить заказ
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              onClick={() => {
+                setShowProfileModal(false)
+                history.push(PROFILE_ROUTE)
+              }}
+            >
+              Перейти в личный кабинет
+            </Button>
+          )}
         </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={showPaymentModal}
+        onHide={() => setShowPaymentModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {paymentSuccess ? 'Оплата завершена' : 'Оплата заказа'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {paymentSuccess ? (
+            <div className="text-center">
+              <FaCheck size={50} color="green" />
+              <h4 className="mt-3">Оплата успешно завершена!</h4>
+              <p>С вами свяжутся по контактному номеру.</p>
+            </div>
+          ) : (
+            <Elements stripe={stripePromise}>
+              <CheckoutForm
+                basket={basket}
+                onSuccess={handlePaymentSuccess}
+                usdRate={usdRate}
+              />
+            </Elements>
+          )}
+        </Modal.Body>
       </Modal>
     </Container>
   )
