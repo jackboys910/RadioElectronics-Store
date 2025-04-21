@@ -13,6 +13,7 @@ import {
   Col,
 } from 'react-bootstrap'
 import { observer } from 'mobx-react-lite'
+import { FaMapMarkedAlt } from 'react-icons/fa'
 import {
   fetchProfile,
   updateProfile,
@@ -22,6 +23,7 @@ import { fetchExchangeRate } from '../http/currencyAPI'
 import { profileValidationSchema } from '../utils/validation/profileValidation'
 import ConfirmationModal from '../components/modals/ConfirmationModal'
 import OrderDetailsModal from '../components/modals/OrderDetailsModal'
+import YandexMapModal from '../components/modals/YandexMapModal'
 
 const Profile = observer(() => {
   const { profile, user, transaction } = useContext(Context)
@@ -39,6 +41,9 @@ const Profile = observer(() => {
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false)
   const [usdRate, setUsdRate] = useState(null)
+  const [showMapModal, setShowMapModal] = useState(false)
+
+  const [isHovered, setIsHovered] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -213,6 +218,10 @@ const Profile = observer(() => {
     }
   }
 
+  const handleAddressFromMap = (address) => {
+    setForm({ ...form, address })
+  }
+
   if (profile.loading) {
     return <Spinner animation="grow" />
   }
@@ -304,7 +313,7 @@ const Profile = observer(() => {
                 {errors.phone}
               </Form.Control.Feedback>
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" style={{ position: 'relative' }}>
               <Form.Label>
                 Адрес <span style={{ color: 'red' }}>*</span>
               </Form.Label>
@@ -314,7 +323,41 @@ const Profile = observer(() => {
                 value={form.address || ''}
                 onChange={handleInputChange}
                 isInvalid={errors.address}
+                style={{ paddingRight: 40 }}
               />
+              <button
+                type="button"
+                variant="outline-secondary"
+                onClick={(e) => {
+                  setShowMapModal(true)
+                  e.target.style.background = 'transparent'
+                }}
+                style={{
+                  position: 'absolute',
+                  right: errors.address ? 35 : 12,
+                  top: 35,
+                  height: 30,
+                  width: 30,
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: isHovered ? '#f0f0f0' : 'transparent',
+                  border: 'none',
+                  transition: 'background-color 0.3s',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={(e) => {
+                  setIsHovered(false)
+                  if (!showMapModal) {
+                    e.target.style.background = 'transparent'
+                  }
+                }}
+                tabIndex={-1}
+              >
+                <FaMapMarkedAlt size={20} color="#877c7c" />
+              </button>
               <Form.Control.Feedback type="invalid">
                 {errors.address}
               </Form.Control.Feedback>
@@ -422,6 +465,12 @@ const Profile = observer(() => {
         onHide={() => setShowOrderDetailsModal(false)}
         order={selectedOrder}
         usdRate={usdRate}
+      />
+
+      <YandexMapModal
+        show={showMapModal}
+        onHide={() => setShowMapModal(false)}
+        onAddressSelect={handleAddressFromMap}
       />
     </Container>
   )

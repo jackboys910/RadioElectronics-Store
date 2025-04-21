@@ -150,7 +150,7 @@ const Basket = observer(() => {
                 <strong>Фамилия:</strong> {profile.profile?.lastName}
               </p>
               <p>
-                <strong>Адрес:</strong> {profile.profile?.address}
+                <strong>Адрес:</strong> {truncate(profile.profile?.address, 40)}
               </p>
               <p>
                 <strong>Телефон:</strong> {profile.profile?.phone}

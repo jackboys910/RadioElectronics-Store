@@ -9,6 +9,12 @@ import TransactionStore from './store/TransactionStore'
 
 export const Context = createContext(null)
 
+const yandexMapsKey = process.env.REACT_APP_YANDEX_MAPS_KEY
+const script = document.createElement('script')
+script.src = `https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=${yandexMapsKey}`
+script.async = true
+document.head.appendChild(script)
+
 ReactDOM.render(
   <Context.Provider
     value={{
